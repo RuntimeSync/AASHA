@@ -323,10 +323,10 @@ Minimum:
 
 ## Authors
 
-- Shreya Awari – https://github.com/shreyaawari28  
-- Sujal Patil – https://github.com/SujalPatil21  
-- Tejas Halvankar – https://github.com/Tejas-H01  
-- Nihal Mishra – https://github.com/NihalMishra3009  
+- Shreya Awari – [Github](https://github.com/shreyaawari28)  
+- Sujal Patil – [Github](https://github.com/SujalPatil21)  
+- Tejas Halvankar – [Github](https://github.com/Tejas-H01)  
+- Nihal Mishra – [Github](https://github.com/NihalMishra3009)  
 
 ---
 
