@@ -1,7 +1,7 @@
-import DashboardPage from "./pages/DashboardPage";
+import AshaPage from "./pages/AshaPage";
 
 function App() {
-  return <DashboardPage />;
+  return <AshaPage />;
 }
 
 export default App;
