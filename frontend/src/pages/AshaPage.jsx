@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import extractStructuredData from '../utils/structuredProcessor';
 import calculateRisk from '../utils/riskEngine';
 import { saveRecord } from "../indexeddb/db";
 import { syncPendingRecords } from "../sync/syncEngine";
 import { verifyConnectivity } from "../utils/connectivity";
+import micIcon from "../assets/mic.png";
 
 function detectInputLanguage(text) {
   const input = (text || '').toLowerCase();
@@ -25,6 +26,21 @@ function detectInputLanguage(text) {
   return mrScore > hiScore ? 'mr' : 'hi';
 }
 
+function getRecognitionConstructor() {
+  if (typeof window === "undefined") return null;
+  return window.SpeechRecognition || window.webkitSpeechRecognition || null;
+}
+
+function toSpeechLocale(language, text) {
+  if (language === "hi") return "hi-IN";
+  if (language === "mr") return "mr-IN";
+  if (language === "en") return "en-IN";
+  const detected = detectInputLanguage(text);
+  if (detected === "mr") return "mr-IN";
+  if (detected === "hi") return "hi-IN";
+  return "en-IN";
+}
+
 function AshaPage() {
   const [language, setLanguage] = useState('auto');
   const [patientName, setPatientName] = useState('');
@@ -38,6 +54,10 @@ function AshaPage() {
   const [isOnline, setIsOnline] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState(null);
   const [lastDetectedLanguage, setLastDetectedLanguage] = useState('en');
+  const [isListening, setIsListening] = useState(false);
+  const [micError, setMicError] = useState("");
+  const [micMode, setMicMode] = useState("");
+  const recognitionRef = useRef(null);
 
   const checkConnectivityAndSync = useCallback(async () => {
     const reachable = await verifyConnectivity();
@@ -67,6 +87,124 @@ function AshaPage() {
       window.removeEventListener("offline", handleNetworkEvent);
     };
   }, [checkConnectivityAndSync]);
+
+  useEffect(() => {
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        recognitionRef.current = null;
+      }
+    };
+  }, []);
+
+  const stopListening = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    recognitionRef.current = null;
+    setIsListening(false);
+  }, []);
+
+  const startListening = useCallback(() => {
+    const Recognition = getRecognitionConstructor();
+    if (!Recognition) {
+      setMicError("Speech recognition is not supported in this browser.");
+      return;
+    }
+    const start = async () => {
+      setMicError("");
+      setMicMode("");
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch {
+        setMicError("Microphone permission denied or unavailable.");
+        return;
+      }
+
+      const mountRecognition = (preferLocal) => {
+        const recognition = new Recognition();
+        recognition.lang = toSpeechLocale(language, rawText);
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        if ("processLocally" in recognition) {
+          recognition.processLocally = preferLocal;
+        }
+
+        recognition.onresult = (event) => {
+          let finalChunk = "";
+          let interimChunk = "";
+
+          for (let i = event.resultIndex; i < event.results.length; i += 1) {
+            const transcript = event.results[i][0]?.transcript || "";
+            if (event.results[i].isFinal) {
+              finalChunk += `${transcript.trim()} `;
+            } else {
+              interimChunk += `${transcript.trim()} `;
+            }
+          }
+
+          const transcriptChunk = (finalChunk || interimChunk).trim();
+          if (!transcriptChunk) return;
+
+          setRawText((prev) => {
+            const base = prev.trim();
+            return base ? `${base} ${transcriptChunk}`.slice(0, 500) : transcriptChunk.slice(0, 500);
+          });
+        };
+
+        recognition.onerror = (event) => {
+          const localModeAttempt = "processLocally" in recognition && recognition.processLocally === true;
+
+          if (localModeAttempt && (event.error === "language-not-supported" || event.error === "service-not-allowed")) {
+            setMicMode("Online fallback");
+            setMicError("Offline speech pack unavailable. Switched to online recognition.");
+            recognitionRef.current = null;
+            setIsListening(false);
+            mountRecognition(false);
+            return;
+          }
+
+          if (event.error === "not-allowed") {
+            setMicError("Microphone permission denied.");
+          } else if (event.error === "language-not-supported") {
+            setMicError("Speech pack for this language is not available on-device.");
+          } else {
+            setMicError(`Speech recognition error: ${event.error}`);
+          }
+          stopListening();
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+          recognitionRef.current = null;
+        };
+
+        try {
+          recognitionRef.current = recognition;
+          recognition.start();
+          setIsListening(true);
+          setMicMode(preferLocal ? "Offline-first" : "Online fallback");
+        } catch {
+          setMicError("Could not start speech recognition in this browser.");
+          stopListening();
+        }
+      };
+
+      mountRecognition(true);
+    };
+
+    start();
+  }, [language, rawText, stopListening]);
+
+  const handleMicToggle = useCallback(() => {
+    if (isListening) {
+      stopListening();
+      return;
+    }
+    startListening();
+  }, [isListening, startListening, stopListening]);
 
   const handleProcessInput = async () => {
     if (!rawText.trim()) {
@@ -194,10 +332,12 @@ function AshaPage() {
           <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
             <button
               type="button"
-              style={{ ...secondaryButton, padding: '8px 12px' }}
-              title="Voice-to-text will be added in next step"
+              style={{ ...secondaryButton, padding: '8px 12px', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+              title="Offline-first speech to text"
+              onClick={handleMicToggle}
             >
-              Start Mic
+              <img src={micIcon} alt="Mic" style={{ width: 16, height: 16 }} />
+              {isListening ? "Stop Mic" : "Start Mic"}
             </button>
             <select style={inputStyle} value={language} onChange={(e) => setLanguage(e.target.value)}>
               <option value="auto">Auto Detect</option>
@@ -205,6 +345,9 @@ function AshaPage() {
               <option value="hi">Hindi</option>
               <option value="mr">Marathi</option>
             </select>
+          </div>
+          <div style={{ color: micError ? '#b42318' : '#667085', fontSize: 12, marginBottom: 8 }}>
+            {micError || (micMode ? `Mode: ${micMode}` : "Speech-to-text runs offline when on-device recognition is available in your browser.")}
           </div>
           {language === 'auto' && (
             <div style={{ color: '#667085', fontSize: 12, marginBottom: 8 }}>
