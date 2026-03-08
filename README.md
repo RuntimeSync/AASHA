@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AASHA — Offline-First Health Data & Risk Flagging System
 
 Digitizing rural healthcare workflows without requiring internet connectivity.
@@ -333,3 +334,6 @@ Minimum:
 ## License
 
 MIT License
+=======
+ECHO is on.
+>>>>>>> f78ba73 (Asha module + backend intergration ( port 8080 ))
