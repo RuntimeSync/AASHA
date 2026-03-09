@@ -69,8 +69,8 @@ const HomePage = () => {
             e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
           }}
         >
-          <div style={{ fontSize: '48px', marginBottom: '10px' }}>ASHA</div>
-          <h2 style={{ fontSize: '24px', margin: '10px 0' }}>ASHA Worker</h2>
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>AASHA</div>
+          <h2 style={{ fontSize: '24px', margin: '10px 0' }}>AASHA Worker</h2>
           <p style={{ fontSize: '16px', color: '#666' }}>Add patients, record observations, work offline</p>
         </div>
 
@@ -97,7 +97,7 @@ const HomePage = () => {
         >
           <div style={{ fontSize: '48px', marginBottom: '10px' }}>PHC</div>
           <h2 style={{ fontSize: '24px', margin: '10px 0' }}>PHC / ANM Staff</h2>
-          <p style={{ fontSize: '16px', color: '#666' }}>Monitor ASHA workers and view health records</p>
+          <p style={{ fontSize: '16px', color: '#666' }}>Monitor AASHA workers and view health records</p>
         </div>
       </div>
     </div>
