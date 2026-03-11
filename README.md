@@ -64,6 +64,30 @@ No black-box AI decisions.
 8. PHC doctor sees summarized high-risk view  
 
 ---
+---
+
+## Screenshots
+
+### Role Selection Interface
+![Role Selection](screenshots/role-selection.png)
+
+Allows users to choose between ASHA worker and PHC staff dashboards.
+
+---
+
+### Patient Health Record Entry
+![Add Patient](screenshots/add-patient.png)
+
+Offline-first patient record entry with voice/text observations and automatic risk evaluation.
+
+---
+
+### Risk Monitoring Dashboard
+![Dashboard](screenshots/dashboard.png)
+
+PHC dashboard showing structured health records and filtering by risk severity.
+
+---
 
 ## Installation (Development Setup)
 
