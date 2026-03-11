@@ -276,7 +276,7 @@ function AshaPage() {
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#0f8f5a' }} />
             <span style={{ fontSize: 12, fontWeight: 700, color: '#0f5132', letterSpacing: 0.4 }}>AASHA PLATFORM</span>
           </div>
-          <h1 style={{ margin: 0, fontSize: 38, lineHeight: 1.08, color: '#111827' }}>ASHA Health Console</h1>
+          <h1 style={{ margin: 0, fontSize: 38, lineHeight: 1.08, color: '#111827' }}>AASHA Health Console</h1>
           <small style={{ color: '#475467', fontSize: 14 }}>AI-Powered Assistant for Community Health Visits</small>
         </div>
         <span style={{ background: isOnline ? '#ecfdf3' : '#fef3f2', color: isOnline ? '#027a48' : '#b42318', borderRadius: 16, padding: '6px 12px', fontWeight: 600 }}>
